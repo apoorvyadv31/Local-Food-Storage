@@ -1,0 +1,46 @@
+pragma solidity ˆ0.8.0; contract SupplyChain {
+enum ProductStatus
+{Pending, Shipped, Delivered} address public owner;
+
+struct Product { string name; uint256 quantity; uint256 price; address farmer;
+address distributor; address retailer; ProductStatus status;
+}
+
+mapping (uint256 => Product) public products;
+uint256 public productCount;
+
+constructor() {
+owner = msg.sender;
+}
+
+function addProduct
+(string memory _name,uint256 _quantity, uint256 _price) public
+{
+require(msg.sender == owner, "Only the contract owner
+can add products"); products[productCount] = Product(_name, _quantity, _price, msg.sender, address(0), address(0), ProductStatus.Pending); productCount++;
+}
+
+function shipProduct (uint256 _productId,
+address _distributor) public
+{
+require(msg.sender == products[_productId].farmer, "Only the farmer who added the product can ship it");
+products[_productId].distributor
+= _distributor; products[_productId].status
+= ProductStatus.Shipped;
+}
+
+function receiveProduct (uint256 _productId) public
+{
+require(msg.sender == products[_productId].distributor, "Only the distributor can
+receive the product"); products[_productId].status
+= ProductStatus.Delivered;
+}
+
+function getProduct(uint256 _productId) public view returns
+(string memory, uint256, uint256, address, address, address, ProductStatus) {
+Product memory p
+= products[_productId];
+return (p.name, p.quantity, p.price, p.farmer, p.distributor,
+p.retailer, p.status);
+}
+}
